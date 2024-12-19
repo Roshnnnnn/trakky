@@ -18,7 +18,7 @@ function App() {
       try {
         const baseUrl = import.meta.env.DEV
           ? "/api"
-          : "http://20.193.149.47:2242";
+          : "https://20.193.149.47:2242";
 
         const response = await axios.get(
           `${baseUrl}/salons/service/?page=${currentPage}`
