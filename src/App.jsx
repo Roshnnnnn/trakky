@@ -16,8 +16,12 @@ function App() {
     const fetchServices = async () => {
       setLoading(true);
       try {
+        const baseUrl = import.meta.env.DEV
+          ? "/api"
+          : "http://20.193.149.47:2242";
+
         const response = await axios.get(
-          `http://20.193.149.47:2242/salons/service/?page=${currentPage}`
+          `${baseUrl}/salons/service/?page=${currentPage}`
         );
         console.log(response.data.results);
         setServices(response.data.results); // Adjust based on actual API response structure
