@@ -49,16 +49,12 @@ function App() {
     <>
       <input
         type="text"
-        placeholder="Search services..."
+        placeholder="Search by Saloon"
         value={searchTerm}
         onChange={handleSearch}
         className="border rounded p-2 mb-4 w-full md:w-1/2 lg:w-1/3"
       />
-      {/* {!loading && !error && services.length > 0 && (
-        <div className="mb-4">
-          Total Services: {totalCount} | Page {currentPage} of {totalPages}
-        </div>
-      )} */}
+
       {loading ? (
         <Loader />
       ) : error ? (
