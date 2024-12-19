@@ -11,22 +11,23 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [nextPageUrl, setNextPageUrl] = useState(null);
   const [prevPageUrl, setPrevPageUrl] = useState(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchServices = async () => {
       setLoading(true);
       try {
-        const baseUrl = import.meta.env.DEV
-          ? "/api"
-          : "https://20.193.149.47:2242";
-
         const response = await axios.get(
-          `${baseUrl}/salons/service/?page=${currentPage}`
+          `http://20.193.149.47:2242/salons/service/?page=${currentPage}&page_size=${itemsPerPage}${
+            searchTerm ? `&search=${searchTerm}` : ""
+          }`
         );
         console.log(response.data.results);
         setServices(response.data.results); // Adjust based on actual API response structure
         setNextPageUrl(response.data.next);
         setPrevPageUrl(response.data.previous);
+        setTotalCount(response.data.count);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -35,30 +36,17 @@ function App() {
     };
 
     fetchServices();
-  }, [currentPage]);
+  }, [currentPage, searchTerm]);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1);
   };
 
-  const itemsPerPage = 10; // Set the number of items per page to 100
-
-  const filteredServices = (services || []).filter((service) =>
-    service.salon_name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const paginatedServices = filteredServices.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
 
   return (
     <>
-      {loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
-          <Loader />
-        </div>
-      )}
       <input
         type="text"
         placeholder="Search services..."
@@ -66,44 +54,43 @@ function App() {
         onChange={handleSearch}
         className="border rounded p-2 mb-4 w-full md:w-1/2 lg:w-1/3"
       />
-      <table className="min-w-full border-collapse border border-gray-200">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border border-gray-300 p-2 text-left">Salon Name</th>
-            <th className="border border-gray-300 p-2 text-left">
-              Description
-            </th>
-            <th className="border border-gray-300 p-2 text-left">
-              Service Name
-            </th>
-            <th className="border border-gray-300 p-2 text-left">Price</th>
-            <th className="border border-gray-300 p-2 text-left">
-              Service Image
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? ( // Show loading state
-            <tr>
-              <td colSpan="5" className="text-center">
-                Loading...
-              </td>
+      {/* {!loading && !error && services.length > 0 && (
+        <div className="mb-4">
+          Total Services: {totalCount} | Page {currentPage} of {totalPages}
+        </div>
+      )} */}
+      {loading ? (
+        <Loader />
+      ) : error ? (
+        <div className="text-red-500 text-center">Error: {error}</div>
+      ) : services.length === 0 ? (
+        <div className="text-center">No Data Available</div>
+      ) : (
+        <table className="min-w-full border-collapse border border-gray-200">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="border border-gray-300 p-2 text-left">#</th>
+              <th className="border border-gray-300 p-2 text-left">
+                Salon Name
+              </th>
+              <th className="border border-gray-300 p-2 text-left">
+                Description
+              </th>
+              <th className="border border-gray-300 p-2 text-left">
+                Service Name
+              </th>
+              <th className="border border-gray-300 p-2 text-left">Price</th>
+              <th className="border border-gray-300 p-2 text-left">
+                Service Image
+              </th>
             </tr>
-          ) : error ? ( // Show error message
-            <tr>
-              <td colSpan="5" className="text-red-500 text-center">
-                Error: {error}
-              </td>
-            </tr>
-          ) : paginatedServices.length === 0 ? ( // Show no data message
-            <tr>
-              <td colSpan="5" className="text-center">
-                No Data Available
-              </td>
-            </tr>
-          ) : (
-            paginatedServices.map((service) => (
+          </thead>
+          <tbody>
+            {services.map((service, index) => (
               <tr key={service.id} className="hover:bg-gray-50">
+                <td className="border border-gray-300 p-2 text-sm md:text-base">
+                  {(currentPage - 1) * itemsPerPage + index + 1}
+                </td>
                 <td className="border border-gray-300 p-2 text-sm md:text-base">
                   {service.salon_name}
                 </td>
@@ -128,10 +115,11 @@ function App() {
                   />
                 </td>
               </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+            ))}
+          </tbody>
+        </table>
+      )}
+
       <div className="flex justify-between mt-4 flex-col md:flex-row">
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
@@ -140,6 +128,15 @@ function App() {
         >
           Previous
         </button>
+        {/* <span className="text-center my-2">
+          Page {currentPage} of {totalPages}
+        </span> */}
+
+        {!loading && !error && services.length > 0 && (
+          <div className="mb-4">
+            Total Services: {totalCount} | Page {currentPage} of {totalPages}
+          </div>
+        )}
         <button
           onClick={() => setCurrentPage((prev) => prev + 1)}
           disabled={!nextPageUrl}
