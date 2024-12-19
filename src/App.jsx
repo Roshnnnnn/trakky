@@ -37,7 +37,7 @@ function App() {
     setSearchTerm(e.target.value);
   };
 
-  const itemsPerPage = 10; // Set the number of items per page
+  const itemsPerPage = 10; // Set the number of items per page to 100
 
   const filteredServices = (services || []).filter((service) =>
     service.salon_name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -62,31 +62,43 @@ function App() {
         onChange={handleSearch}
         className="border rounded p-2 mb-4 w-full md:w-1/2 lg:w-1/3"
       />
-      {error ? (
-        <div className="text-red-500 text-center">Error: {error}</div>
-      ) : paginatedServices.length === 0 ? (
-        <div className="text-center">No Data Available</div>
-      ) : (
-        <table className="min-w-full border-collapse border border-gray-200">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border border-gray-300 p-2 text-left">
-                Salon Name
-              </th>
-              <th className="border border-gray-300 p-2 text-left">
-                Description
-              </th>
-              <th className="border border-gray-300 p-2 text-left">
-                Service Name
-              </th>
-              <th className="border border-gray-300 p-2 text-left">Price</th>
-              <th className="border border-gray-300 p-2 text-left">
-                Service Image
-              </th>
+      <table className="min-w-full border-collapse border border-gray-200">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="border border-gray-300 p-2 text-left">Salon Name</th>
+            <th className="border border-gray-300 p-2 text-left">
+              Description
+            </th>
+            <th className="border border-gray-300 p-2 text-left">
+              Service Name
+            </th>
+            <th className="border border-gray-300 p-2 text-left">Price</th>
+            <th className="border border-gray-300 p-2 text-left">
+              Service Image
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading ? ( // Show loading state
+            <tr>
+              <td colSpan="5" className="text-center">
+                Loading...
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {paginatedServices.map((service) => (
+          ) : error ? ( // Show error message
+            <tr>
+              <td colSpan="5" className="text-red-500 text-center">
+                Error: {error}
+              </td>
+            </tr>
+          ) : paginatedServices.length === 0 ? ( // Show no data message
+            <tr>
+              <td colSpan="5" className="text-center">
+                No Data Available
+              </td>
+            </tr>
+          ) : (
+            paginatedServices.map((service) => (
               <tr key={service.id} className="hover:bg-gray-50">
                 <td className="border border-gray-300 p-2 text-sm md:text-base">
                   {service.salon_name}
@@ -112,10 +124,10 @@ function App() {
                   />
                 </td>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            ))
+          )}
+        </tbody>
+      </table>
       <div className="flex justify-between mt-4 flex-col md:flex-row">
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
